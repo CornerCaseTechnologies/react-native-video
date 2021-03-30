@@ -84,6 +84,7 @@ static int const RCTVideoUnset = -1;
   NSString *_filterName;
   BOOL _filterEnabled;
   UIViewController * _presentingViewController;
+  BOOL _pictureInPictureStatusActive;
 #if __has_include(<react-native-video/RCTVideoCache.h>)
   RCTVideoCache * _videoCache;
 #endif
@@ -711,7 +712,11 @@ static int const RCTVideoUnset = -1;
     } else if ([keyPath isEqualToString:playbackLikelyToKeepUpKeyPath]) {
       // Continue playing (or not if paused) after being paused due to hitting an unbuffered zone.
       if ((!(_controls || _fullscreenPlayerPresented) || _playerBufferEmpty) && _playerItem.playbackLikelyToKeepUp) {
-        [self setPaused:_paused];
+        if (_pictureInPictureStatusActive) {
++              [self setPaused:true];
++          } else {
++            [self setPaused:_paused];
++          }
       }
       _playerBufferEmpty = NO;
       self.onVideoBuffer(@{@"isBuffering": @(NO), @"target": self.reactTag});
@@ -1978,6 +1983,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     self.onPictureInPictureStatusChanged(@{
                                            @"isActive": [NSNumber numberWithBool:false]
                                            });
+	  _pictureInPictureStatusActive = false;
   }
 }
 
@@ -1986,6 +1992,7 @@ didCancelLoadingRequest:(AVAssetResourceLoadingRequest *)loadingRequest {
     self.onPictureInPictureStatusChanged(@{
                                            @"isActive": [NSNumber numberWithBool:true]
                                            });
+	  _pictureInPictureStatusActive = true;
   }
 }
 
